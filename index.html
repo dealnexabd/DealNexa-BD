@@ -103,101 +103,51 @@ footer{background:#10213b;color:#dce7f8;padding:24px 0;margin-top:35px}
       <option value="130">বরিশালের বাইরে - ৳১৩০</option>
     </select>
   </div>
-</div>
 
-</div><label for="pay">পেমেন্ট পদ্ধতি</label><select id="pay"><option>Cash on Delivery</option><option>bKash</option><option>Nagad</option></select></div>
-<div class="notice">bKash/Nagad পেমেন্ট নম্বর ও পেমেন্টের নিয়ম অর্ডার নিশ্চিত করার সময় WhatsApp-এ জানানো হবে। এই সাইটে এখনো স্বয়ংক্রিয় পেমেন্ট গেটওয়ে নেই।</div>
-<button onclick="order()">WhatsApp-এ অর্ডার পাঠান</button></div>
+  <div class="field">
+    <label for="pay">পেমেন্ট পদ্ধতি</label>
+    <select id="pay"><option>Cash on Delivery</option><option>bKash</option><option>Nagad</option></select>
+  </div>
+
+  <div class="notice">bKash/Nagad পেমেন্ট নম্বর ও পেমেন্টের নিয়ম অর্ডার নিশ্চিত করার সময় WhatsApp-এ জানানো হবে। এই সাইটে এখনো স্বয়ংক্রিয় পেমেন্ট গেটওয়ে নেই।</div>
+  <button onclick="order()">WhatsApp-এ অর্ডার পাঠান</button>
+</div>
 <p class="notice">পণ্যের ছবি ও ডিজাইন আপনার দেওয়া ছবির ভিত্তিতে যোগ করা হয়েছে। বিক্রির আগে পণ্যের ব্র্যান্ড/লোগোর সত্যতা ও ব্যবহারের অনুমতি নিশ্চিত করুন।</p>
 </main><footer><div class="wrap"><b>DealNexa BD</b><p>অর্ডার সহায়তা: WhatsApp 01832763840</p><small>© 2026 DealNexa BD</small></div></footer>
 
 
-<script type="module">
+<script>
+const products = [
+  {id:1, name:"Color Splash Hoodie – White & Maroon", price:900},
+  {id:2, name:"Color Splash Hoodie – Black", price:900},
+  {id:3, name:"Cute Cat Zip Hoodie – Black", price:900},
+  {id:4, name:"Cute Cat Zip Hoodie – Maroon", price:900},
+  {id:5, name:"Love Cat Zip Hoodie – Black", price:900}
+];
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCetkVvPpOkDXTzrAe7TUuMkDJt45080u4",
-  authDomain: "dealnexa-bd.firebaseapp.com",
-  projectId: "dealnexa-bd",
-  storageBucket: "dealnexa-bd.firebasestorage.app",
-  messagingSenderId: "300073034500",
-  appId: "1:300073034500:web:c492db4ecab15d5993a651",
-  measurementId: "G-YQR9FCF5J9"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let products = [];
-
-async function loadProducts() {
-  try {
-    const snapshot = await getDocs(collection(db, "products"));
-
-    products = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    console.log("Products loaded:", products);
-    draw();
-
-  } catch (error) {
-    console.error("Product Load Error:", error);
-  }
-}
-
-let cart=[];
+let cart = [];
 
 function add(id){
-  const p = products.find(x => String(x.id) === String(id));
+  const p = products.find(x => x.id === Number(id));
+  if(!p){ alert('পণ্য পাওয়া যায়নি।'); return; }
 
-  if(!p){
-    alert('পণ্য পাওয়া যায়নি।');
-    return;
-  }
-
-  const sizeEl = document.getElementById('size'+id);
-
-  if(!sizeEl){
-    alert('সাইজ নির্বাচন পাওয়া যায়নি।');
-    return;
-  }
-
+  const sizeEl = document.getElementById('size' + id);
+  if(!sizeEl){ alert('সাইজ নির্বাচন পাওয়া যায়নি।'); return; }
   const size = sizeEl.value;
 
-  const found = cart.find(x =>
-    String(x.id) === String(id) && x.size === size
-  );
-
+  const found = cart.find(x => x.id === p.id && x.size === size);
   if(found){
-    if(found.qty >= 5){
-      alert('সর্বোচ্চ ৫টি অর্ডার করা যাবে।');
-      return;
-    }
+    if(found.qty >= 5){ alert('সর্বোচ্চ ৫টি অর্ডার করা যাবে।'); return; }
     found.qty++;
-  }else{
-    cart.push({
-      id:p.id,
-      name:p.name,
-      size:size,
-      price:Number(p.price),
-      qty:1
-    });
+  } else {
+    cart.push({id:p.id, name:p.name, size:size, price:p.price, qty:1});
   }
-
   draw();
 }
+
 function draw(){
   const el = document.getElementById('cart');
   const totalEl = document.getElementById('total');
-
   if(!el || !totalEl) return;
 
   if(cart.length === 0){
@@ -207,90 +157,57 @@ function draw(){
   }
 
   let total = 0;
-
-  el.innerHTML = cart.map((item,index)=>{
+  el.innerHTML = cart.map((item, index) => {
     const subtotal = item.price * item.qty;
     total += subtotal;
-
     return `
-      <div>
+      <div class="cartline" style="display:block">
         <b>${item.name}</b><br>
-        সাইজ: ${item.size}<br>
-        দাম: ৳${item.price}<br>
-        পরিমাণ: 
-        <button onclick="changeQty(${index},-1)">−</button>
+        সাইজ: ${item.size} | দাম: ৳${item.price}<br>
+        পরিমাণ:
+        <button style="width:auto;display:inline-block;margin:4px" onclick="changeQty(${index},-1)">−</button>
         ${item.qty}
-        <button onclick="changeQty(${index},1)">+</button>
+        <button style="width:auto;display:inline-block;margin:4px" onclick="changeQty(${index},1)">+</button>
         <br>মোট: ৳${subtotal}
-        <button onclick="removeItem(${index})">বাদ দিন</button>
-      </div>
-    `;
-                                         
+        <button style="width:auto;display:inline-block;background:#c0392b;margin:4px" onclick="removeItem(${index})">বাদ দিন</button>
+      </div>`;
   }).join('');
-
   totalEl.innerHTML = 'মোট: ৳' + total;
 }
 
-
-function changeQty(index,change){
+function changeQty(index, change){
   if(!cart[index]) return;
-
   const newQty = cart[index].qty + change;
-
-  if(newQty < 1){
-    removeItem(index);
-    return;
-  }
-
-  if(newQty > 5){
-    alert('সর্বোচ্চ ৫টি অর্ডার করা যাবে।');
-    return;
-  }
-
+  if(newQty < 1){ removeItem(index); return; }
+  if(newQty > 5){ alert('সর্বোচ্চ ৫টি অর্ডার করা যাবে।'); return; }
   cart[index].qty = newQty;
   draw();
 }
 
 function removeItem(index){
-  cart.splice(index,1);
+  cart.splice(index, 1);
   draw();
 }
 
-window.add = add;
-window.draw = draw;
-window.changeQty = changeQty;
-window.removeItem = removeItem;
-
 function order(){
-if(!cart.length){
-alert('আগে পণ্য কার্টে যোগ করুন।');
-return;
-}
+  if(!cart.length){ alert('আগে পণ্য কার্টে যোগ করুন।'); return; }
 
-let n=document.getElementById('name').value.trim();
-let p=document.getElementById('phone').value.trim();
-let a=document.getElementById('address').value.trim();
+  const n = document.getElementById('buyer').value.trim();
+  const p = document.getElementById('phone').value.trim();
+  const a = document.getElementById('address').value.trim();
+  if(!n || !p || !a){ alert('নাম, মোবাইল ও ঠিকানা পূরণ করুন।'); return; }
 
-if(!n || !p || !a){
-alert('নাম, মোবাইল ও ঠিকানা পূরণ করুন।');
-return;
-}
+  const delivery = Number(document.getElementById('delivery').value);
+  const lines = cart.map(x => `${x.name} | সাইজ ${x.size} | ${x.qty}টি | ৳${x.price * x.qty}`).join('\n');
+  const subtotal = cart.reduce((s, x) => s + x.price * x.qty, 0);
+  const total = subtotal + delivery;
 
-let delivery=Number(document.getElementById('delivery').value);
-
-let lines=cart.map(x=>
-`${x.name} | সাইজ ${x.size} | ${x.qty}টি | ৳${x.price*x.qty}`
-).join('\n');
-
-let subtotal=cart.reduce((s,x)=>s+x.price*x.qty,0);
-let total=subtotal+delivery;
-
-let msg=`DealNexa BD Hoodie Order
+  const msg = `DealNexa BD Hoodie Order
 নাম: ${n}
 মোবাইল: ${p}
 ঠিকানা: ${a}
 পেমেন্ট: ${document.getElementById('pay').value}
-\n
+
 পণ্যসমূহ:
 ${lines}
 
@@ -298,42 +215,9 @@ ${lines}
 ডেলিভারি চার্জ: ৳${delivery}
 সর্বমোট: ৳${total}`;
 
-let url=`https://wa.me/8801832763840?text=${encodeURIComponent(msg)}`;
-window.open(url,'_blank');
+  window.open('https://wa.me/8801832763840?text=' + encodeURIComponent(msg), '_blank');
 }
 
-
-window.open(
-  'https://wa.me/8801832763840?text=' + encodeURIComponent(msg),
-  '_blank'
-);
-}
-
-
-async function loadProducts() {
-  try {
-    const snapshot = await getDocs(collection(db, "products"));
-
-    products = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    console.log("Products loaded:", products);
-    draw();
-
-  } catch (error) {
-    console.error("Product Load Error:", error);
-    alert("পণ্য লোড হয়নি। Firebase পরীক্ষা করুন।");
-  }
-}
-
-window.add = add;
-window.draw = draw;
-window.removeItem = removeItem;
-window.order = order;
-
-loadProducts();
 draw();
 </script>
  <!-- Floating WhatsApp Button -->
