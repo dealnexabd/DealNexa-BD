@@ -1,5 +1,8 @@
 <!doctype html>
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQR9FCF5J9"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-YQR9FCF5J9');</script>
 <meta name="description" content="শীতের হুডি, টি-শার্ট ও গিফট কম্বো। বরিশালসহ সারা বাংলাদেশে ডেলিভারি।">
 <title>DealNexa BD | শীতের ফ্যাশন – ড্রেস, টি-শার্ট ও গিফট কম্বো</title>
 <style>
@@ -220,6 +223,12 @@ header{position:sticky;top:0;z-index:50}
 <h2>তথ্য ও নীতিমালা</h2>
 <details><summary>ডেলিভারি সময়</summary><p id="t-del"></p></details>
 <details><summary>রিটার্ন ও এক্সচেঞ্জ পলিসি</summary><p id="t-ret"></p></details>
+<details><summary>গোপনীয়তা নীতি</summary>
+<p><b>আমরা কী তথ্য নিই:</b> অর্ডার দেওয়ার সময় আপনার নাম, মোবাইল নম্বর, ঠিকানা ও অর্ডারের তালিকা। এগুলো শুধু পণ্য পৌঁছে দেওয়া ও অর্ডার সম্পর্কে যোগাযোগের জন্য ব্যবহার করা হয়।</p>
+<p><b>কোথায় থাকে:</b> অর্ডারের তথ্য আমাদের ডাটাবেসে (Google Firebase) জমা হয় এবং আপনি WhatsApp-এ যে মেসেজ পাঠান, সেখানে থাকে। আমরা আপনার তথ্য কারও কাছে বিক্রি করি না। ডেলিভারির জন্য প্রয়োজন হলে শুধু কুরিয়ার সেবাকে নাম, নম্বর ও ঠিকানা জানানো হতে পারে।</p>
+<p><b>সাইট ব্যবহারের তথ্য:</b> কতজন সাইটে আসছেন ও কোন পণ্য দেখছেন, তা বোঝার জন্য আমরা Google Analytics ব্যবহার করি। এতে আপনার নাম বা নম্বর থাকে না।</p>
+<p><b>আপনার ব্রাউজারে জমা থাকে:</b> আপনার পছন্দের তালিকা (♥) শুধু আপনার ফোন বা ব্রাউজারে সংরক্ষিত থাকে, আমাদের কাছে যায় না।</p>
+<p><b>আপনার অধিকার:</b> আপনার তথ্য মুছে ফেলতে বা বদলাতে চাইলে WhatsApp-এ আমাদের জানান।</p></details>
 <details><summary>আমাদের সম্পর্কে</summary><p>DealNexa BD বরিশালভিত্তিক একটি অনলাইন শপ। আমরা শীতের পোশাক, টি-শার্ট ও গিফট কম্বো সারা বাংলাদেশে পৌঁছে দিই।</p></details>
 <details><summary>যোগাযোগ</summary><p>WhatsApp: <a href="https://wa.me/8801832763840">01832763840</a><br>Facebook: <a id="t-fb" target="_blank" rel="noopener" href="#">আমাদের পেজ</a><br>Instagram: <a id="t-ig" target="_blank" rel="noopener" href="#">আমাদের প্রোফাইল</a></p></details>
 </main><footer><div class="wrap"><b>DealNexa BD</b><p>অর্ডার সহায়তা: WhatsApp 01832763840</p><small>© 2026 DealNexa BD</small></div></footer>
@@ -665,7 +674,7 @@ function refreshCard(card){
   }
 }
 function paintHeart(card){const on=wished(card._p),h=card._h;h.classList.toggle('on',on);h.textContent=on?'♥':'♡';h.setAttribute('aria-pressed',on);h.setAttribute('aria-label',on?'পছন্দের তালিকা থেকে বাদ দিন':'পছন্দের তালিকায় যোগ করুন')}
-function toggleWish(card){const id=String(card._p.id),i=wish.indexOf(id);if(i>=0)wish.splice(i,1);else wish.push(id);try{localStorage.setItem(WK,JSON.stringify(wish))}catch(e){}paintHeart(card);refreshUI();applyFilters()}
+function toggleWish(card){const id=String(card._p.id),i=wish.indexOf(id);if(i>=0)wish.splice(i,1);else{wish.push(id);try{gtag('event','add_to_wishlist',{items:[{item_id:id,item_name:card._p.name,price:card._p.price}]})}catch(e){}}try{localStorage.setItem(WK,JSON.stringify(wish))}catch(e){}paintHeart(card);refreshUI();applyFilters()}
 function buildChips(){$('#cats').innerHTML=['',...CATS].map(c=>`<button type="button" class="chip" data-c="${c}">${c||'সব'}<span class="n"></span></button>`).join('')+'<button type="button" class="chip" data-wlchip>❤ পছন্দের<span class="n"></span></button>'}
 function updateChips(){document.querySelectorAll('#cats .chip').forEach(b=>{let n;
   if(b.hasAttribute('data-wlchip')){n=wishCount();b.classList.toggle('on',wl)}
@@ -737,6 +746,7 @@ window.order=order=function(){
   saveOrder({orderNo:no,name:n,phone:ph,address:a,payment:pay,
     items:cart.map(x=>({productId:String(x.id),name:x.name,size:x.size,qty:x.qty,price:x.price})),
     subtotal:c.sub,comboDiscount:c.cb,coupon:coupon||'',couponDiscount:c.cp,delivery:c.del,total:c.tot}).then(ok=>{const m=$('#osave');m.className='msg '+(ok?'ok':'err');m.textContent=ok?'✔ অর্ডার আমাদের সার্ভারে সংরক্ষিত হয়েছে।':'⚠ ইন্টারনেট সমস্যায় অর্ডার সার্ভারে সংরক্ষণ হয়নি। অনুগ্রহ করে অবশ্যই WhatsApp-এ মেসেজটি পাঠান।'});
+  try{gtag('event','purchase',{transaction_id:no,value:c.tot,currency:'BDT',coupon:coupon||undefined,items:cart.map(x=>({item_id:String(x.id),item_name:x.name,item_variant:x.size,price:x.price,quantity:x.qty}))})}catch(e){}
   $('#on').textContent=no;$('#owa').href='https://wa.me/8801832763840?text='+encodeURIComponent(msg);
   cart.forEach(x=>{const p=products.find(q=>String(q.id)===String(x.id));if(p&&typeof p.stock==='number')p.stock-=x.qty});
   cart=[];coupon=null;$('#coupon').value='';$('#cmsg').textContent='';draw();
@@ -754,7 +764,7 @@ document.addEventListener('click',e=>{
   const th=t.closest('.th');
   if(th){const card=th.closest('.product'),im=card.querySelector('img.zm');im.src=card._p.images[th.dataset.i];card.querySelectorAll('.th').forEach(x=>x.classList.toggle('on',x===th));return}
   if(t.closest('[data-chart]'))return openM('#ms');
-  if(t.matches&&t.matches('img.zm')){$('#mzi').src=t.src;$('#mzi').className='';$('#mz').classList.add('zoom');openM('#mz');return}
+  if(t.matches&&t.matches('img.zm')){try{const pc=t.closest('.product');if(pc&&pc._p)gtag('event','view_item',{items:[{item_id:String(pc._p.id),item_name:pc._p.name,price:pc._p.price}]})}catch(e){}$('#mzi').src=t.src;$('#mzi').className='';$('#mz').classList.add('zoom');openM('#mz');return}
   if(t.id==='mzi')t.classList.toggle('z');
 });
 document.addEventListener('keydown',e=>{
@@ -785,6 +795,11 @@ buildChips();
 gridEl.insertAdjacentHTML('beforeend','<article class="skel" aria-hidden="true"><div class="sk-i"></div><div class="sk-b"><i></i><i></i><i style="width:50%"></i></div></article>'.repeat(3));
 new MutationObserver(boot).observe(gridEl,{childList:true});
 boot();
+/* Analytics: কার্টে যোগ */
+const _add=add;
+window.add=add=function(){const q0=cart.reduce((a,x)=>a+x.qty,0);const r=_add.apply(this,arguments);
+  try{const q1=cart.reduce((a,x)=>a+x.qty,0);if(q1>q0){const p=products.find(x=>String(x.id)===String(arguments[0]));if(p)gtag('event','add_to_cart',{currency:'BDT',value:p.price,items:[{item_id:String(p.id),item_name:p.name,price:p.price,quantity:1}]})}}catch(e){}
+  return r};
 /* নিরাপত্তা: কোনো ব্রাউজারে অ্যানিমেশন না চললেও কার্ড যেন লুকিয়ে না থাকে */
 setTimeout(()=>document.querySelectorAll('.reveal').forEach(e=>e.classList.add('show')),3000);
 Promise.resolve(window.dnLoading).finally(()=>gridEl.querySelectorAll('.skel').forEach(e=>e.remove()));
