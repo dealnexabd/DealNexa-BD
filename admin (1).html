@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DealNexa BD | Admin Panel</title>
+<style>
+:root{--navy:#17233b;--blue:#2457d6;--bg:#f3f6ff;--ink:#182235;--muted:#68758a;--line:#e5eaf2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(115deg,#111d35,#263c69);color:#fff;padding:17px 4%;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 5px 18px #17233a22}
+.brand{font-size:21px;font-weight:850}.brand span{color:#52dfca}
+main{width:min(1100px,94%);margin:24px auto}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:18px;box-shadow:0 5px 20px #17233a08}
+h1{font-size:25px;margin:0 0 6px}h2{font-size:19px;margin:0 0 14px}.muted{color:var(--muted);font-size:14px}
+input,textarea,select{width:100%;padding:11px;border:1px solid #d5ddeb;border-radius:9px;font:inherit;background:white}
+label{font-size:14px;font-weight:700;display:block;margin:10px 0 5px}
+button{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:white;font-weight:750;font:inherit;cursor:pointer}
+button.secondary{background:#eaf0ff;color:#1d49b8}button.danger{background:#c83d45}button:disabled{opacity:.55;cursor:not-allowed}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wide{grid-column:1/-1}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.stat{position:relative;overflow:hidden;min-height:112px;border:0;border-radius:16px;padding:17px 16px;color:#fff;box-shadow:0 7px 18px #17233a20}.stat:nth-child(1){background:linear-gradient(125deg,#9b4de0,#e64eae)}.stat:nth-child(2){background:linear-gradient(125deg,#54c98c,#398ce9)}.stat:nth-child(3){background:linear-gradient(125deg,#10b7d0,#0878b9)}.stat:nth-child(4){background:linear-gradient(125deg,#ff9b28,#f04428)}.stat .stat-icon{font-size:23px;display:block;margin-bottom:5px}.stat b{display:block;font-size:25px;margin-top:7px;color:#fff}.stat span{font-size:14px;font-weight:750}.stat:after{content:"";position:absolute;width:95px;height:95px;border-radius:50%;background:#ffffff16;right:-25px;bottom:-42px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}th{background:#f7f9fc}
+.thumb{width:48px;height:48px;object-fit:cover;border-radius:8px;background:#eee}.tablewrap{overflow-x:auto}.hidden{display:none!important}
+#message{margin-top:12px;font-size:14px}.ok{color:#087d50}.err{color:#bd3030}
+@media(max-width:650px){.formgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.stat{min-height:105px;padding:14px 12px}.stat b{font-size:22px}main{margin:15px auto}header{padding:14px 3%}}
+</style>
+</head>
+<body>
+<header><div class="brand">Deal<span>Nexa</span> BD <small style="font-size:12px;font-weight:500">ADMIN</small></div><button id="logoutBtn" class="secondary hidden">Logout</button></header>
+<main>
+<section id="loginCard" class="card" style="max-width:460px;margin:45px auto">
+<h1>Admin Login</h1><p class="muted">শুধু অনুমোদিত অ্যাডমিন অ্যাকাউন্ট দিয়ে প্রবেশ করুন।</p>
+<label for="email">Admin Email</label><input id="email" type="email" autocomplete="username" placeholder="আপনার admin email">
+<label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড">
+<div class="actions" style="margin-top:14px"><button id="loginBtn">Login</button></div><div id="loginMessage"></div>
+</section>
+
+<section id="app" class="hidden">
+<div class="toprow" style="margin-bottom:16px"><div><h1>Dashboard</h1><div class="muted">পণ্য ও স্টক ম্যানেজমেন্ট</div></div><button id="refreshBtn" class="secondary">Refresh</button></div>
+<div class="stats">
+<div class="stat"><span class="stat-icon">▣</span><span>মোট পণ্য</span><b id="totalProducts">0</b></div>
+<div class="stat"><span class="stat-icon">▱</span><span>স্টক আছে</span><b id="inStock">0</b></div>
+<div class="stat"><span class="stat-icon">▤</span><span>Low Stock (৫ বা কম)</span><b id="lowStock">0</b></div>
+<div class="stat"><span class="stat-icon">▦</span><span>মোট স্টক ইউনিট</span><b id="totalUnits">0</b></div>
+</div>
+
+<div class="card" style="margin-top:18px">
+<div class="toprow"><h2 id="formTitle">নতুন পণ্য যোগ করুন</h2><button id="resetBtn" class="secondary">ফর্ম পরিষ্কার</button></div>
+<form id="productForm">
+<input type="hidden" id="productId">
+<div class="formgrid">
+<div><label for="name">পণ্যের নাম *</label><input id="name" required maxlength="120" placeholder="যেমন: Classic Hoodie"></div>
+<div><label for="category">ক্যাটাগরি</label><input id="category" placeholder="যেমন: Winter Collection"></div>
+<div><label for="price">বিক্রয় মূল্য (৳) *</label><input id="price" type="number" min="0" step="1" required></div>
+<div><label for="stock">স্টক সংখ্যা *</label><input id="stock" type="number" min="0" step="1" required></div>
+<div><label for="sizes">সাইজ (কমা দিয়ে লিখুন)</label><input id="sizes" placeholder="M, L, XL"></div>
+<div><label for="image">ছবির URL</label><input id="image" type="url" placeholder="https://..."></div>
+<div class="wide"><label for="description">বর্ণনা (ঐচ্ছিক)</label><textarea id="description" rows="2" placeholder="পণ্যের সংক্ষিপ্ত বিবরণ"></textarea></div>
+</div>
+<div class="actions" style="margin-top:14px"><button id="saveBtn" type="submit">পণ্য সংরক্ষণ করুন</button></div>
+<div id="formMessage"></div>
+</form>
+</div>
+
+<div class="card">
+<div class="toprow"><h2>পণ্যের তালিকা</h2><input id="search" style="max-width:260px" placeholder="পণ্যের নাম খুঁজুন"></div>
+<div class="tablewrap"><table><thead><tr><th>ছবি</th><th>পণ্যের নাম</th><th>দাম</th><th>স্টক</th><th>কাজ</th></tr></thead><tbody id="productRows"><tr><td colspan="5">লোড হচ্ছে...</td></tr></tbody></table></div>
+</div>
+<div class="card"><h2>অর্ডার ম্যানেজমেন্ট</h2><p class="muted">বর্তমান ওয়েবসাইটে অর্ডার WhatsApp-এ পাঠানো হয়; Firestore-এ অর্ডার সংরক্ষিত হয় না। তাই এই সংস্করণে অর্ডার তালিকা/স্ট্যাটাস দেখা যাবে না। অর্ডার ম্যানেজমেন্ট চালু করতে মূল index.html-এর order() ফাংশনেও অর্ডার ডেটা Firestore-এ সেভ করতে হবে।</p></div>
+<div id="globalMessage"></div>
+</section>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCetkVvPpOkDXTzrAe7TUuMkDJt45080u4",
+  authDomain: "dealnexa-bd.firebaseapp.com",
+  projectId: "dealnexa-bd",
+  storageBucket: "dealnexa-bd.firebasestorage.app",
+  messagingSenderId: "300073034500",
+  appId: "1:300073034500:web:c492db4ecab15d5993a651",
+  measurementId: "G-YQR9FCF5J9"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const $ = id => document.getElementById(id);
+let products = [];
+
+function message(id, text, good=false){ const el=$(id); el.textContent=text; el.className=good?'ok':'err'; }
+function money(n){return '৳'+Number(n||0).toLocaleString('en-BD')}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+onAuthStateChanged(auth, user => {
+  $('loginCard').classList.toggle('hidden',!!user);
+  $('app').classList.toggle('hidden',!user);
+  $('logoutBtn').classList.toggle('hidden',!user);
+  if(user) loadProducts();
+});
+$('loginBtn').addEventListener('click', async()=>{
+  const email=$('email').value.trim(), password=$('password').value;
+  if(!email||!password){message('loginMessage','ইমেইল ও পাসওয়ার্ড দিন।');return}
+  $('loginBtn').disabled=true;
+  try{await signInWithEmailAndPassword(auth,email,password);message('loginMessage','লগইন সফল হয়েছে।',true)}
+  catch(e){message('loginMessage','লগইন হয়নি: '+(e.code||e.message))}
+  finally{$('loginBtn').disabled=false}
+});
+$('logoutBtn').addEventListener('click',()=>signOut(auth));
+$('refreshBtn').addEventListener('click',loadProducts);
+$('search').addEventListener('input',renderRows);
+$('resetBtn').addEventListener('click',resetForm);
+
+async function loadProducts(){
+  $('productRows').innerHTML='<tr><td colspan="5">লোড হচ্ছে...</td></tr>';
+  try{
+    const snap=await getDocs(collection(db,'products'));
+    products=snap.docs.map(d=>({id:d.id,...d.data()}));
+    $('totalProducts').textContent=products.length;
+    $('inStock').textContent=products.filter(p=>Number(p.stock??5)>0).length;
+    $('lowStock').textContent=products.filter(p=>Number(p.stock??5)<=5).length;
+    $('totalUnits').textContent=products.reduce((sum,p)=>sum+Math.max(0,Number(p.stock??5)||0),0).toLocaleString('en-BD');
+    renderRows();
+  }catch(e){$('productRows').innerHTML='<tr><td colspan="5">ডেটা লোড হয়নি: '+esc(e.message)+'</td></tr>'}
+}
+function renderRows(){
+  const q=$('search').value.trim().toLowerCase();
+  const list=products.filter(p=>String(p.name||'').toLowerCase().includes(q));
+  if(!list.length){$('productRows').innerHTML='<tr><td colspan="5">কোনো পণ্য পাওয়া যায়নি।</td></tr>';return}
+  $('productRows').innerHTML=list.map(p=>`<tr>
+    <td>${p.image||p.imageUrl||p.img||p.photo?`<img class="thumb" src="${esc(p.image||p.imageUrl||p.img||p.photo)}" alt="">`:'—'}</td>
+    <td><b>${esc(p.name||'নাম নেই')}</b><br><small>${esc(p.category||'')}</small></td>
+    <td>${money(p.price)}</td><td>${esc(p.stock??5)}</td>
+    <td><div class="actions"><button class="secondary" data-edit="${esc(p.id)}">Edit</button><button class="danger" data-delete="${esc(p.id)}">Delete</button></div></td>
+  </tr>`).join('');
+  $('productRows').querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editProduct(b.dataset.edit)));
+  $('productRows').querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>removeProduct(b.dataset.delete)));
+}
+function resetForm(){
+  $('productForm').reset();$('productId').value='';$('formTitle').textContent='নতুন পণ্য যোগ করুন';$('saveBtn').textContent='পণ্য সংরক্ষণ করুন';$('formMessage').textContent='';
+}
+function editProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  $('productId').value=p.id;$('name').value=p.name||'';$('category').value=p.category||'';
+  $('price').value=p.price??'';$('stock').value=p.stock??5;
+  $('sizes').value=Array.isArray(p.sizes)?p.sizes.join(', '):(p.sizes||p.size||'');
+  $('image').value=p.image||p.imageUrl||p.img||p.photo||'';
+  $('description').value=p.description||'';
+  $('formTitle').textContent='পণ্য এডিট করুন';$('saveBtn').textContent='পরিবর্তন সংরক্ষণ করুন';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('productForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=$('productId').value;
+  const data={name:$('name').value.trim(),category:$('category').value.trim()||'General',
+    price:Number($('price').value),stock:Number($('stock').value),
+    sizes:$('sizes').value.split(',').map(x=>x.trim()).filter(Boolean),
+    image:$('image').value.trim(),description:$('description').value.trim(),updatedAt:serverTimestamp()};
+  if(!data.name||!Number.isFinite(data.price)||!Number.isFinite(data.stock)||data.price<0||data.stock<0){message('formMessage','সঠিক নাম, দাম ও স্টক দিন।');return}
+  $('saveBtn').disabled=true;
+  try{
+    if(id) await updateDoc(doc(db,'products',id),data);
+    else await addDoc(collection(db,'products'),{...data,createdAt:serverTimestamp()});
+    message('formMessage',id?'পণ্য আপডেট হয়েছে।':'নতুন পণ্য যোগ হয়েছে।',true);
+    resetForm();await loadProducts();
+  }catch(err){message('formMessage','সংরক্ষণ হয়নি: '+err.message)}
+  finally{$('saveBtn').disabled=false}
+});
+async function removeProduct(id){
+  const p=products.find(x=>x.id===id);
+  if(!p||!confirm(`"${p.name}" পণ্যটি ডিলিট করবেন?`))return;
+  try{await deleteDoc(doc(db,'products',id));await loadProducts();message('globalMessage','পণ্য ডিলিট হয়েছে।',true)}
+  catch(e){message('globalMessage','ডিলিট হয়নি: '+e.message)}
+}
+</script>
+</body>
+</html>
